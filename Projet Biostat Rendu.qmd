@@ -26,10 +26,6 @@ header-includes:
 
 \newpage
 
-```{r}
-setwd("C:/Users/Djayan/Desktop/Projet Biostat Rendu")
-```
-
 ```{r warning=FALSE, message=FALSE}
 library(readxl)
 library(writexl)
@@ -132,16 +128,11 @@ data_full$inscrits <- as.numeric(data_full$inscrits)
 L'idée est ici de sauvegarder les données complètes du département pour n'avoir que cette base de données à ouvrir lors du lancement et ne pas avoir à charger les bases `data_vote` et `data_geo` qui sont beaucoup plus lourdes et longues à importer.
 
 ```{r}
-# Chemin complet
-
-chemin_fichier <- file.path("data", "Données complètes.xlsx")
-
-
 # Enregistrer le fichier Excel dans le dossier data
 
 write_xlsx(
   x = data_full,
-  path = chemin_fichier,
+  path = "data/Données complètes.xlsx",
   col_names = TRUE,
   format_headers = TRUE
 )
