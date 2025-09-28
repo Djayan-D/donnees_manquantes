@@ -22,7 +22,15 @@ header-includes:
     }
 ---
 
+
+
 \newpage
+
+setwd(C:/Users/Djayan/Desktop/donnees_manquantes)
+
+\newpage
+
+
 
 ```{r warning=FALSE, message=FALSE}
 library(readxl)
@@ -35,6 +43,8 @@ library(FNN)
 library(mice)
 library(corrplot)
 ```
+
+
 
 \newpage
 
@@ -62,6 +72,8 @@ Dans notre dossier, nous allons aborder de manière détailler, les différentes
 
 ## Importation des bases
 
+
+
 ```{r warning=FALSE, message=FALSE}
 options(digits = 15)
 
@@ -70,7 +82,11 @@ data_vote <- read_excel("data/Données votes.xlsx")
 data_geo <- read.csv("data/Données géographiques.csv")
 ```
 
+
+
 ## Modification des données
+
+
 
 ```{r}
 data_vote <- data_vote[data_vote$`Code du département` == "44", ]
@@ -110,7 +126,11 @@ data_full <- merge(data_full, data_geo,
 data_full <- data_full[,-1] #retirer la ligne "Code de la commune"
 ```
 
+
+
 ## Type des données
+
+
 
 ```{r}
 str(data_full)
@@ -121,9 +141,13 @@ data_full$code_bur_vote <- as.integer(data_full$code_bur_vote)
 data_full$inscrits <- as.numeric(data_full$inscrits)
 ```
 
+
+
 ## Sauvegarder les données complètes
 
 L'idée est ici de sauvegarder les données complètes du département pour n'avoir que cette base de données à ouvrir lors du lancement et ne pas avoir à charger les bases `data_vote` et `data_geo` qui sont beaucoup plus lourdes et longues à importer.
+
+
 
 ```{r}
 # Enregistrer le fichier Excel dans le dossier data
@@ -136,13 +160,21 @@ write_xlsx(
 )
 ```
 
+
+
 Il faut donc rouvrir / ouvrir la base de données
+
+
 
 ```{r}
 data_full <- read_excel("data/Données complètes.xlsx")
 ```
 
+
+
 ## Incorporer des NA
+
+
 
 ```{r}
 data_proj_1 <- data_full
@@ -188,6 +220,8 @@ chemin_fichier <- file.path("data", "Données projet.xlsx")
 data_save_1 <- read_excel("data/Données projet.xlsx")
 ```
 
+
+
 \newpage
 
 # Présentation des données
@@ -197,6 +231,8 @@ Avant de commencer l'analyse des données et le remplacement des valeurs manquan
 De ce fait, il est impératif de travailler avec une base de données fixe et stable, car une base qui évolue continuellement n'est pas logique. Lorsqu'on travaille sur des données, celles-ci doivent être soit correctes dès le départ, soit identifiées comme manquantes et laissées ainsi. Une donnée ne peut pas être, un coup manquante, puis, lors d'un nouveau traitement, ne plus l'être, et ainsi de suite. Une fois qu'une donnée manquante est détectée, elle doit le rester, sauf si elle est complétée par une méthode d'imputation. Cela permet de maintenir la stabilité et la cohérence de l'analyse, évitant ainsi toute incohérence dans le traitement des données.
 
 Importons donc notre base de données
+
+
 
 ```{r}
 data <- read_excel("data/Données projet.xlsx")
@@ -209,6 +245,8 @@ data$code_bur_vote <- as.factor(data$code_bur_vote)
 
 head(data)
 ```
+
+
 
 La base de données que nous avons choisie d'étudier cherche à analyser, comme expliqué en introduction, la participation électorale au niveau local, avec en plus de cela des informations relatives à la géographie. Elle est constituée de 1110 observations et de 11 variables. Les variables sont les suivantes.
 
@@ -277,6 +315,8 @@ Les variables présentes dans notre jeu de données peuvent être regroupées en
 ## Analyse univariée des données
 
 L’analyse descriptive des données fournit une vue d’ensemble des différentes variables et de leurs distributions, y compris leurs minimums, maximums, quartiles, médianes, et moyennes, ainsi que le nombre de valeurs manquantes (`NA`). Nous allons donc, pour les variables qualitatives, réaliser des graphiques en barres pour voir la répartition selon les différentes modalités et, pour les variables quantitatives, réaliser des histogrammes ainsi que des boxplots. Suite à cela, nous proposerons une interprétation des résultats selon chaque variable.
+
+
 
 ```{r}
 summary(data)
@@ -465,6 +505,8 @@ ggplot(data, aes(x = "", y = longitude)) +
   theme(plot.title = element_text(hjust = 0.5))
 ```
 
+
+
 Les barplots des variables `nom_commune` et `code_bur_vote` ne sont pas très lisibles en raison du grand nombre de modalités présentes. En effet, chaque commune ou code de bureau de vote correspond à une modalité unique, ce qui entraîne une grande dispersion des données dans le graphique. Cependant, ces visualisations ont pour objectif principal de montrer que certaines communes comptent un plus grand nombre de bureaux de vote que d'autres. Cela est parfaitement logique, car les communes plus grandes ou plus peuplées nécessitent davantage de bureaux de vote pour couvrir l'ensemble de la population électorale. De plus, certains bureaux de vote apparaissent plusieurs fois, ce qui peut également affecter la clarté des barplots, mais reflète simplement le fait que certains bureaux sont associés à plusieurs circonscriptions ou que les codes de bureau sont répartis sur plusieurs zones.
 
 Maintenant que nous avons dit cela et représenté les variables, interprétons les résultats.
@@ -573,6 +615,8 @@ En résumé, bien que des données manquantes existent, cela fait partie intégr
 
 Nous allons maintenant aborder l'analyse bivariée des variables quantitatives. Cette étape est essentielle pour explorer les relations entre deux variables numériques. En comparant ces variables, nous pouvons identifier des corrélations, des tendances, ou des patterns qui pourraient exister entre elles. Cela nous permettra de mieux comprendre comment une variable peut influencer ou être liée à une autre, ce qui est crucial pour affiner nos hypothèses et guider la modification des valeurs manquantes dans notre étude.
 
+
+
 ```{r}
 data_quanti <- data |>
   select_if(is.numeric)
@@ -591,6 +635,8 @@ corrplot(cor_data,
 )
 ```
 
+
+
 La matrice de corrélation met en lumière les relations entre les différentes variables quantitatives. Tout d’abord, nous observons une corrélation parfaite de -1 entre les taux d’abstention (`tx_absents`) et les taux de votants (`tx_votants`). Cela est parfaitement logique, car ces deux variables sont complémentaires : une augmentation de l’abstention entraîne une diminution directe de la participation, et vice-versa.
 
 Ensuite, une corrélation positive notable de 0.73 est observée entre le taux d’abstention (`tx_absents`) et le taux de bulletins nuls (`tx_nuls`). Cela pourrait indiquer que dans les zones où l’abstention est élevée, il y a également une tendance accrue à déposer des bulletins nuls, probablement liée à un désintérêt global pour le processus électoral ou à une méfiance vis-à-vis des choix proposés.
@@ -606,6 +652,8 @@ En conclusion, cette analyse met en évidence des relations cohérentes avec les
 ### Analyse bivariée pour deux variables qualitatives
 
 Nous allons maintenant passer à l'analyse bivariée des variables qualitatives. Cette analyse nous permet d'examiner les relations entre deux variables catégorielles, afin d'identifier des associations ou des tendances dans les données. Par exemple, en croisant des variables telles que la circonscription et le code de bureau de vote, nous pouvons observer si certaines catégories sont plus fréquentes ou ont des comportements similaires. Cette étape est importante pour comprendre comment les différentes modalités des variables qualitatives interagissent entre elles.
+
+
 
 ```{r}
 # Circonscription & bureau de votes
@@ -667,6 +715,8 @@ data |>
   )
 ```
 
+
+
 Les graphiques ci-dessus sont des visualisations de type heatmap qui montrent les relations entre différentes paires de variables qualitatives.
 
 Le premier graphique croise la circonscription avec le code de bureau de vote. Il nous permet d'observer la distribution des bureaux de vote dans les différentes circonscriptions et de repérer les zones avec un grand nombre de bureaux.
@@ -684,6 +734,8 @@ Maintenant, passons à l’analyse bivariée quali-quanti, qui consiste à étud
 Par exemple, nous pouvons analyser comment des variables comme le taux de votants ou le taux d'absents varient selon les circonscriptions électorales ou les communes. Cela nous permet de mieux comprendre si, par exemple, certaines circonscriptions ou communes ont des comportements électoraux différents, ou si des facteurs géographiques influencent la participation ou l’abstention des électeurs.
 
 Cette analyse permet d’identifier des tendances ou des différences importantes entre les groupes, ce qui est essentiel pour mieux interpréter les données en fonction de critères géographiques ou sociaux. Toutefois, là encore, nous allons avoir un problème avec le nombre de valeurs que peuvent prendre `nom_commune` et `code_bur_vote`. Bien que le fait d'habiter dans une commune plutôt que dans une autre a sûrement une influence dans la façon de voter, nous n'allons pas représenter cela ici car ça serait illisble. De la même façon, nous allons omettre la variable qualitative `code_bur_vote`. Il est moins grave d'ignorer celle-ci car il n'existe pas de lien direct entre le code d'un bureau de vote et la façon de voter. De ce fait, nous allons uniquement nous intéresser à la variable qualitative `circonscription` et à toutes les variables qualitatives.
+
+
 
 ```{r}
 
@@ -798,6 +850,8 @@ data |>
 
 ```
 
+
+
 Dans notre analyse quali-quanti, l'utilisation d'un diagramme de violon nous permet d'examiner visuellement si la répartition des variables quantitatives de notre base de données varie de manière significative entre les différentes circonscriptions. En observant les différences de forme, de largeur et de densité des violons pour chaque circonscription, nous pouvons identifier des tendances ou des anomalies spécifiques.
 
 Cette approche facilite la comparaison des distributions au sein de chaque circonscription et nous permet de voir si certaines présentent des valeurs systématiquement plus élevées ou plus basses. En d'autres termes, le diagramme de violon nous aide à déterminer s'il existe une relation ou une association entre les circonscriptions et les variables quantitatives de notre base, ce qui pourrait indiquer des facteurs sociopolitiques ou organisationnels influençant les comportements dans différentes zones.
@@ -820,9 +874,13 @@ Ces observations sont des éléments importants à prendre en compte lors de l'i
 
 # Remplacement des NA
 
+
+
 ```{r}
 data <- read_excel("data/Données projet.xlsx")
 ```
+
+
 
 Maintenant que nous avons constitué la base et qu'elle présente des vides, l'objectif principal de ce dossier est de tenter de la reconstituer le plus fidèlement possible. Pour ce faire, nous utiliserons diverses méthodes. Afin que cela soit plus clair, nous diviserons cette reconstruction en deux parties. Dans la première, nous chercherons à reconstituer la base autant que possible en nous appuyant uniquement sur la logique. Dans la seconde, pour les données qui demeurent incomplètes, nous tenterons de les approximer afin de les rapprocher de valeurs réalistes.
 
@@ -841,6 +899,8 @@ Prenons un exemple : imaginons une ligne dans la base de données où le nom de 
 De manière générale, si les valeurs sont suffisamment précises, une seule coordonnée (latitude ou longitude) suffit pour identifier une ville. Cela est particulièrement vrai dans notre cas car la Loire-Atlantique compte seulement 207 communes sur un territoire assez vaste et surtout nos coordonnées sont très précises, de l’ordre de $10^{-11}$. Ces communes, bien que non réparties de manière purement aléatoire, leur localisation étant influencée par des critères comme la géographie, les cours d’eau ou d’autres facteurs historiques, n’ont pas été implantées en fonction de leurs coordonnées géographiques, qui sont une donnée abstraite mesurée a posteriori. De plus, dans notre cas, les coordonnées attribuées à chaque ville ont été calculées en déterminant le centre géométrique des limites de la commune. Cette méthode, bien que mathématique, accentue encore davantage le côté aléatoire de la répartiton des coordonnées et rend encore plus improbable la possibilité que deux villes puissent partager exactement une même coordonnées.
 
 Toutefois, pour en être certain, nous allons modéliser mathématiquement cette situation. De par les éléments évoqués précédemment, nous allons considérer que les communes ont été réparties avec une probabilité uniforme sur l’ensemble du territoire de la Loire-Atlantique. Pour simplifier davantage cette analyse, nous modéliserons la Loire-Atlantique comme un rectangle, dont la largeur correspond à la distance interquartile des latitudes et la longueur à la distance interquartile des longitudes. Cette approche permet de réduire l’influence des valeurs extrêmes (maximums et minimums) et de mieux représenter la distribution centrale des communes. En procédant ainsi, nous réduisons la superficie réelle de la Loire-Atlantique et, par conséquent, le nombre total de combinaisons possibles pour les coordonnées. Cela augmente donc artificiellement la probabilité que deux communes partagent une même valeur pour une coordonnée donnée, garantissant que notre calcul ne sous-évalue pas ce risque. Il est cependant pertinent de noter que la longueur interquartile peut être légèrement faussée en raison de la présence de données manquantes (NA). Toutefois, cela n'a qu'un impact minime sur les résultats, car même si certaines lignes manquent de coordonnées, il suffit que ces valeurs manquantes soient identiques à celles d'une autre ligne pour que cela n'affecte pas l'analyse. De plus, les données manquantes sont réparties aléatoirement dans notre jeu de données, ce qui minimise l'impact de ces absences. Ainsi, cette approche reste très fiable pour l'estimation des coordonnées manquantes. Procédons donc au calcul.
+
+
 
 ```{r}
 #----- Déterminer la longueur interquartile -----
@@ -890,6 +950,8 @@ P_longitude <- 1 - P_distincts
 1/P_longitude
 ```
 
+
+
 En conclusion, la probabilité qu'en Loire-Atlantique, deux villes partagent exactement la même latitude ou la même longitude est inférieure à 1 sur 1.3 millions. De ce fait, nous pouvons affirmer, sans risque majeur, que chaque latitude et chaque longitude est propre à une commune.
 
 Nous pouvons donc désormais envisager avec confiance de compléter les variables `nom_commune`, `latitude` et `longitude` entre elles, comme expliqué précédemment. Cependant, avant cela, nous allons faire un petit point nomenclature.
@@ -905,6 +967,8 @@ Cette façon de noter est généralisable à n'importe quelle base. Si nous voul
 :::
 
 Maintenant que cela est dit, nous pouvons entamer les rempalcements.
+
+
 
 ```{r}
 # LATITUDE → NOM COMMUNE
@@ -947,7 +1011,11 @@ data <- data |>
 sum(is.na(data$nom_commune))
 ```
 
+
+
 Effectuer ces remplacements nous ont permis de passer de 215 valeurs manquantes dans `nom_commune` à 59. L'étape suivante est la même, nous échangeons simplement la variable `latitude` par la variable `longitude`.
+
+
 
 ```{r}
 # LONGITUDE → NOM_COMMUNE
@@ -988,7 +1056,11 @@ data <- data |>
 sum(is.na(data$nom_commune))
 ```
 
+
+
 Au final, utiliser les variables `longitude` et `latitude` pour compléter `nom_commune` nous a permis de passer de 215 `NA`, ce qui représente presque 20% de la base, à 28, c'est-à-dire moins de 3% de celle-ci. Par la suite, nous allons donc effectuer le même type de remplacement pour `latitude` et pour `longitude`
+
+
 
 ```{r}
 # NOM COMMUNE → LATITUDE
@@ -1066,6 +1138,8 @@ data <- data |>
 sum(is.na(data$longitude))
 ```
 
+
+
 Bien que cela puisse sembler utile au premier abord, il est en réalité inutile d’effectuer les deux dernières étapes, à savoir compléter `latitude` à partir de `longitude` et `longitude` à partir de `latitude`. En effet, dès lors que nous avons complété `nom_commune` en utilisant successivement `latitude` puis `longitude`, celle-ci est devenue la variable la plus complète, ou du moins la plus complète et pertinente. Une variable "non-pertinente" à cette étape, dans notre but de les utiliser entre-elles pour déduire des valeurs, est une variable pour laquelle il existe une valeur pour dans une ligne de notre base de données, mais où il n'en existe pas pour les deux autres variables car, dans ce cas, il est impossible de s’en servir pour compléter quoi que ce soit. Ainsi, lorsque nous avons ensuite utilisé `nom_commune` pour compléter `latitude` et `longitude`, ces deux variables ont à leur tour été complétées autant que possible. Par conséquent, tenter de compléter `latitude` à partir de `longitude`, ou inversement, n’a aucun intérêt, car elles possèdent déjà les informations que l’autre pourrait leur apporter.
 
 ### Circonscirption
@@ -1075,6 +1149,8 @@ Puisque les données de `nom_commune`, `latitude` et `longitude` ont, pour l’i
 La prochaine variable que nous allons essayer de compléter est celle concernant la circonscription. Celle-ci fonctionne de façon assez similaire à ce que nous avons vu précédemment. Il va donc suffir de réaliser le même processus, c'est-à-dire regarder `nom_commune`, `latitude` et `longitude` pour voir si des lignes possèdes des valeurs communes et peuvent aider à compléter celles où la circonscription est vide. Bien qu'il y a de forte chances pour que la première opération avec la première variable remplace la quasi totalité des `NA` qu'il est possible de déterminer, nous sommes contraints de tout de même le faire avec les 3 variables car il se pourrait, par exemple, que 2 lignes n'aient pas de nom de commune, pas de latitude mais partagent la même longitude et qu'une des deux ait l'information concernant la circonscription et pas l'autre. Néanmoins, à la différence d'avant, la relation entre `nom_commune`, `latitude` et `longitude` avec `circonscription` n'est pas bilatérale. En effet, regarder la circonscription d'une ligne ne peut pas nous donner avec certitude le nom de la commune, la longitude ou la latitude car il y a plusieurs communes au sein d'une même circonscription.
 
 Avant d’apporter des modifications à nos données, il est essentiel de vérifier qu’une commune donnée, identifiée par son nom ou ses coordonnées géographiques, n’est associée qu’à une seule circonscription. Bien qu’il puisse manquer certaines informations, il est peu probable qu’une commune présente dans plusieurs circonscriptions passe totalement inaperçue à cause des `NA`. En effet, les communes réparties sur plusieurs circonscriptions sont généralement de grandes villes, comportant de nombreux bureaux de vote, ce qui entraîne plusieurs lignes dans notre jeu de données. De plus, comme les `NA` ont été insérés de manière aléatoire et non selon un regroupement spécifique, la probabilité qu’ils masquent un groupe entier de données est extrêmement faible. Par conséquent, notre objectif est simplement de vérifier si une commune apparaît dans plus d’une circonscription, sans chercher à déterminer précisément combien.
+
+
 
 ```{r}
 #----- Analyse dans nom_commune -----
@@ -1119,9 +1195,13 @@ data |>
 
 ```
 
+
+
 Après analyse, et comme nous pouvions nous y attendre, une seule commune apparaît associée à plusieurs circonscriptions : `Nantes`, qui est répartie sur cinq circonscriptions. Une recherche rapide sur Internet nous a permis de confirmer qu’aucune autre commune ne partage cette particularité, ce qui valide notre conclusion : Nantes est la seule commune présente dans plusieurs circonscriptions. Dans certaines bases de données, un numéro est parfois ajouté au nom des communes pour indiquer à quelle circonscription appartient chaque bureau de vote. Cependant, ce n’est pas le cas ici. De plus, les coordonnées géographiques ne permettent pas non plus de distinguer les différentes circonscriptions pour Nantes, car aucune différenciation explicite n’a été effectuée. Par conséquent, lorsque nous utiliserons `nom_commune`, `latitude` ou `longitude` pour compléter les données manquantes de la variable `circonscription`, il sera nécessaire d’exclure Nantes de ces opérations. Sinon, la circonscription attribuée pour remplacer un `NA` pourrait être incorrecte, compromettant ainsi la précision des données.
 
 Commençons par utiliser le nom des communes pour trouver la circonsciption
+
+
 
 ```{r}
 # NOM COMMUNE → CIRCONSCRIPTION
@@ -1163,7 +1243,11 @@ data <- data |>
 sum(is.na(data$circonscription))
 ```
 
+
+
 Puis maintenant la latitude pour trouver la circonscription.
+
+
 
 ```{r}
 # LATITUDE → CIRCONSCRIPTION
@@ -1211,7 +1295,11 @@ data <- data |>
 sum(is.na(data$circonscription))
 ```
 
+
+
 Et, enfin, la longitude pour trouver la circonscription.
+
+
 
 ```{r}
 # LONGITUDE → CIRCONSCRIPTION
@@ -1259,6 +1347,8 @@ data <- data |>
 sum(is.na(data$circonscription))
 ```
 
+
+
 Nous avons donc remplacés dans `circonscription` toutes les valeurs manquantes dont nous étions certains grâce aux variables `nom_commune`, `latitude` et `longitude`. Cela nous a permis de passer de 221 valeurs `NA` à 65, ce qui représente tout de même une belle réduction.
 
 ### Code des bureaux de vote
@@ -1266,6 +1356,8 @@ Nous avons donc remplacés dans `circonscription` toutes les valeurs manquantes 
 Afin de poursuivre la reconstitution de notre jeu de données, nous allons nous intéresser à une variable que nous n'avons, jusqu'à là, pas mobilisé : `code_bur_vote`. En tant que telle, la variable n'a pas de réel intérêt. En effet, si nous complétons d'abord notre jeu de données par des remplacements "sûrs" c'est dans l'objectif de pouvoir ensuite estimer du mieux possible les données introuvables. Les remplacements incertains, qui arriveront ensuite, utilisent les différentes données à disposition pour estimer au mieux les valeurs. Si par exemple nous souhaitons estimer `tx_absents`, celui-ci va pouvoir être estimé grâce à `circonscription` et `nom_commune` car, il est connu que, lors des élections, les communes d'une même circonscription partagent généralement des intérêts communs et des spécificités communes (type de population, emploi, ...) et donc que les tendances de votes, mais aussi d'absentéisme ou de vote blancs, se rapprochent. Cependant, au sein d'une commune, il n'y a pas de réelle différence entre les bureaux de votes. Qu'un individu soit dans le bureau 1 ou 5, il va voter de la même manière. De ce fait, déterminer les codes de bureaux de vote va uniquement nous servir à trouver de façon sûre les circonscriptions, les noms de communes, et donc la latitude et la longitude.
 
 Pour ce faire, nous allons commencer par regarder les bureaux de votes manquants pour chaque commune. L’idée ici est d’examiner, pour chaque commune, s’il existe une interruption dans la numérotation des bureaux de vote. Par exemple, si une commune dispose de 5 bureaux numérotés de 1 à 5, mais que le numéro 4 est manquant, nous vérifierons si une ligne dépourvue de nom de commune correspond à un bureau numéro 4. Cela pourrait indiquer que la ligne est celle de la commune en question. Le problème de cette méthode est qu'il pourrait y avoir plusieurs "bureau 4" en trop. De ce fait, afin d'affiner la recherche et limiter les possibilités, nous allons traiter ce problème par circonscription. En effet, si deux "bureau 4" sont disponibles, il est compliqué de savoir quelle ligne appartient à quelle commune. Cependant, en y ajoutant la dimension `circonsciption`, comme il y en a 10, il y a de fortes chances que ces deux bureaux ne soient pas dans la même circonsciption et donc que nous puissions en déduire la commune associée, et donc les coordonnées géographique car, comme expliqué précédemment, tout est lié. Toutefois, nous devons, à nouveau, retirer Nantes car ses bureaux de vote ont une numérotation spéciale et ne permettent pas de déterminer quoi que ce soit.
+
+
 
 ```{r}
 
@@ -1295,13 +1387,19 @@ bur_trou$bureaux_manquants <- as.character(bur_trou$bureaux_manquants)
 bur_trou
 ```
 
+
+
 Maintenant que nous avons réussi à détecter les différents trous, nous allons lister les différentes lignes qui pourraient compromettre le fait de combler les vides. Tout d'abord, une ligne étant à la fois `NA` dans `circonscription`, `nom_commune` et `code_bur_vote` serait très embarrassante car elle pourrait aller n'importe où puisqu'elle ne pourrait pas se différencier des autres par sa circonscription, son nom ou son code de bureau de vote. La seule façon de réussir à la différencier serait alors de comparer les coordonnées géographiques, mais cela implique qu'elle en ait, car elles pourraient très bien aussi être `NA`, et que la ligne à laquelle nous souhaitons la comparer en ait aussi. Cependant, avant de savoir comment régler ce problème, nous devons d'abord voir si ce problème existe dans notre jeu de données, autrement dit, regarder s'il des lignes avec à la fois `NA` dans `circonscription`, dans `nom_commune` et dans `code_bur_vote`.
+
+
 
 ```{r}
 sum(data[is.na(data$circonscription) 
          & is.na(data$nom_commune) 
          & is.na(data$code_bur_vote),])
 ```
+
+
 
 Par chance, nous n'avons pas de telles lignes dans notre jeu de données. Deuxièmement, bien qu'aucune ligne avec les trois informations manquantes existe, il peut en exister deux. En effet, il peut y avoir des lignes avec :
 
@@ -1312,6 +1410,8 @@ Par chance, nous n'avons pas de telles lignes dans notre jeu de données. Deuxi�
 -   `NA` dans `nom_commune`, dans `code_bur_vote` mais avec une valeur dans `circonscription`
 
 Ces lignes peuvent être problématiques car 2 `NA` pour 3 variables offrent un grand degré de liberté puisque, par exemple, s'il n'y a ni circonscription ni nom de commune, cela veut dire que la ligne peut appartenir à n'importe quelle circonscription de n'importe quelle commune tant qu'elle a le code de bureau de vote manquant. Nous allons donc regrouper les données selon ces trois cas pour pouvoir y faire attention.
+
+
 
 ```{r}
 # ----- Pas circonscription / nom de commune mais un code bureau de vote -----
@@ -1343,58 +1443,90 @@ com_bur_na <- data[is.na(data$nom_commune) & is.na(data$code_bur_vote),]
 com_bur_na
 ```
 
+
+
 Maintenant que nous avons identifié les individus problématiques, nous allons regarder circonscription par circonscription les bureaux de votes manquants pour chaque commune.
 
 Toutefois, avant de commencer, il est important de noter que la liste des codes de bureaux de vote manquants par commune, que nous avons précédemment vue, n'est pas exhaustive. En effet, pour réaliser cette liste, nous sommes partis du principe qu'une commune avait nécessairement au moins un bureau de vote et ensuite nous avons compté le nombre de lignes où la commune apparaît. Cela veut dire que si la ligne apparaît `n` fois, elle a au moins `n` bureaux de vote. Après cela, nous avons fait la différence entre cette séquence complète (c'est-à-dire la séquence s'étendant de 1 jusqu'à `n`) et les codes de bureaux réellement constatés. Cependant, nous savons que certaines lignes ont un nom de commune manquant. De ce fait, il pourrait en fait y avoir plus de lignes dans la commune que ce que nous avons compté. Pour illustrer cela, prenons un exemple. Si Saint-Nazaire apparaît 45 fois dans la base de données, nous avons créé une séquence allant de 1 (au moins un bureau de vote) jusqu'à 45 (nombre de bureaux nécessaires pour combler toutes les lignes), et la séquence est donc : 1 2 3 ... 44 45. Si maintenant nous comparons sur ces 45 lignes les codes des bureaux de vote à la séquence créée, il peut y avoir des trous, c'est-à-dire des endroits où il manque un ou plusieurs bureaux de vote pour que la séquence soit complète, c'est ce que nous avons récapitulé dans le tableau `bur_trou`. Si, toujours dans notre exemple, nous constatons dans `bur_trou` qu'il y a un seul trou, le code de bureau de vote 35, et que nous constatons dans notre base de données `data` qu'il existe une seule ligne avec le nom de commune Saint-Nazaire et sans code de bureau de vote, nous pourrions être tentés de dire qu'il s'agit nécessairement de la ligne contenant le bureau de vote 35. Cependant, c'est ici où nous devons être vigilant car, comme vu juste avant, il existe certaines lignes qui n'ont ni nom de commune, ni code de bureau de vote mais aussi des lignes ayant seulement la circonscription (en admettant ici que ce soit la même que Saint-Nazaire), de ce fait ces lignes pourraient très bien être celles contenant le code de bureau de vote 35 et le ou les autres lignes, notamment celle que nous pensions nécessairement être celle avec le code de bureau 35, être plutôt des lignes situées après 45 (donc 46 47 ...). En effet, si nous ajoutons une ligne qui n'avait pas de nom de commune à Saint-Nazaire, `n` n'est plus de 45 mais de 46, et, de ce fait, il manque aussi le code de bureau 46, et plus seulement le 35. Par conséquent, il est important de bien vérifier avant de conclure qu'une ligne avec un trou appartient à un groupe et c'est ce que nous allons tâcher de faire dans la suite.
 
 Pour faire face à ces problèmes, nous allons procéder de la manière suivante. Nous allons commencer par regarder, et retenir, le code de bureau de vote des communes qui n'ont ni circonscription ni nom dans `cir_com_na` car nous aurons du mal à conclure quoi que ce soit lorsque ce numéro manque puisque les lignes pourraient correspondre à trop de communes.
 
+
+
 ```{r}
 cir_com_na$code_bur_vote
 ```
 
+
+
 Il y en a donc quatre différents : 1, 3, 11 et 17. Interessons nous maintenant aux circonscriptions dans lequelles il y a des lignes sans nom de commune et sans code de bureaux de vote car, comme expliqué précédemment, de telles lignes sont trop libres et compromettent le fait de retrouver les infomations manquante par des raisonnements logiques.
+
+
 
 ```{r}
 cir_pb <- unique(com_bur_na$circonscription)
 cir_pb
 ```
 
+
+
 Il y a donc trois circonscriptions différentes : la 3ème circonscription, la 6ème circonscription et la 7ème. Pour le moment, comme pour les bureaux de votes cités précédemment, nous ne seront pas en mesure de conclure quoi que ce soit lorsqu'une ligne est issue de cette circonscription. De ce fait, nous choisissons de ne pas nous y intéresser pour les remplacements qui vont venir.
+
+
 
 ```{r}
 bur_trou_cir_pb <- bur_trou[!(bur_trou$circonscription %in% cir_pb),]
 bur_trou_cir_pb
 ```
 
+
+
 Maintenant que nous avons extrait les données sur lequelles nous pouvons travailler, nous allons regarder les lignes dans `bur_trou_cir_pb` pour lesquelles la valeur dans `nb_na_bureau` est inférieure au nombre de codes de bureau de vote manquants (colonne `bureaux_manquants`). Attention, il s'agit bien du nombre de valeurs dans `bureaux_manquants` (il faut les compter) et non du numéro en lui-même. Une fois cela fait, 4 villes ressortent. Nous allons donc réduire notre tableau `bur_trou_cir_pb` à ces 4 lignes.
+
+
 
 ```{r}
 bur_trou_cir_pb_1 <- bur_trou_cir_pb[c(2,5,38,57),]
 bur_trou_cir_pb_1 
 ```
 
+
+
 Ces quatre communes partagent un point commun : elles n'ont pas assez de lignes sans code de bureau de vote vide pour combler les bureaux qu'il leur manque nécessairement. De ce fait, cela veut dire que chacune de ces 4 communes a au moins une ligne pour qui `nom_commune` est un `NA` à la place de porter le nom de la commune. Grâce à cela, nous allons pouvoir compléter certaines lignes en trouvant leur valeur dans `nom_commune` ou dans `code_bur_vote`. Afin de simplifier la suite, créons ici la base `bur_na_com`, c'est-à-dire la base regroupant les lignes qui ont un nom de commune mais qui n'ont pas de de code de bureau de vote.
+
+
 
 ```{r}
 bur_na_com <- data[!is.na(data$nom_commune) & is.na(data$code_bur_vote), ]
 bur_na_com
 ```
 
+
+
 Pour commencer, reprenons notre liste de quatre communes et regardons la première : `Bouaye`. Il manque à celle-ci au moins deux bureaux : le 3 et le 4, mais il n'y a qu'une ligne dans la base de données pourtant le nom `Bouaye` dans `bur_na_com`.
+
+
 
 ```{r}
 sum(bur_na_com$nom_commune == "Bouaye")
 ```
 
+
+
 De ce fait, il n'y a pas assez de lignes pour combler les deux bureaux manquants. Cela veut donc dire qu'il y a une autre ligne dans la base de données qui devrait avoir dans `nom_commune` le nom `Bouaye` mais qui a un `NA` pour le moment. Si nous commençons par regarder le code de bureau de vote 4, comme ce n'est pas une valeur présente dans les lignes de `cir_com_na`, la seule possibilité, autre que la ligne dans `bur_na_com` est qu'il y ait une ligne avec la circonscription de Bouaye, c'est-à-dire la 4ème circonscription, mais avec un `NA` pour `nom_commune` et `code_bur_vote`, car, nous le rappelons, il n'y a pas dans notre base une ligne où toutes les informations manquent. Regardons donc les lignes de la 4ème circonscription qui n'ont ni nom de commune, ni code de bureau de vote.
+
+
 
 ```{r}
 data[data$circonscription == "4ème circonscription" & 
        is.na(data$nom_commune) & !is.na(data$circonscription),]
 ```
 
+
+
 Comme dans la 4ème circonscription le seul code de bureau de vote disponible est le numéro 3, nous en déduisons que, nécessairement, la ligne portant le nom de `Bouaye` mais n'ayant pas de numéro de code de bureau de vote est en fait celle du bureau de vote 4. Nous pouvons donc modifier notre base de données `data` en conséquence, mais aussi `bur_trou` et `bur_na_com`.
+
+
 
 ```{r}
 # ----- data -----
@@ -1418,22 +1550,34 @@ bur_trou$bureaux_manquants[bur_trou$nom_commune == "Bouaye"] <- "3"
 bur_na_com <- bur_na_com[-which(bur_na_com$nom_commune == "Bouaye"),]
 ```
 
+
+
 Maintenant qu'il n'y a plus de ligne dans `bur_na_com` de disponible pour Bouaye, intéressons nous à l'autre code de bureau de vote qui lui manque : le numéro 3. Comme nous l'avons vu précédemment, une ligne avec un code de bureau de vote 3 et sans nom de commune est disponible dans la 4ème circonscription. Il est donc tentant d'affirmer qu'il s'agit de celle de Bouaye. Cependant, nous devons nous rappeler que dans notre base de données, il existe une ligne sans circonscription et sans nom de commune ayant le code de bureau de vote 3, de ce fait, nous ne pouvons rien conclure. De plus, si nous regardons dans `bur_trou` les communes de la `4ème circonscription`, certaines ont égélament besoin d'un code de bureau 3 (Rezé et Saint-Sébastien-sur-Loire) et d'autres pourraient en avoir besoin (cas des communes qui ont seulement 2 lignes avec une valeur dans `nom_commune` et où nous n'avons donc pas pu déterminer s'il manquait davantage bureaux), donc même si nous sommes sûrs que la ligne dans `com_na_cir_4` appartient bien à une commune de la 4ème circonscription ayant besoin d'un code de bureau de vote 3, nous ne pouvons pas confirmer, ni infirmer, qu'il s'agit de celle de Bouaye.
 
 Suite à cela, nous pouvons nous intéresser à la prochaine commune.
+
+
 
 ```{r}
 bur_trou_cir_pb_1[2,]
 ```
 
+
+
 La situation de Carquefou est un peu différente de celle de Bouaye car il n'y a plus deux bureaux manquants mais trois, mais l'idée reste la même, il n'y a toujours pas assez de lignes dans `bur_na_com` pour pouvoir insérer tous les codes de bureau de vote manquants. Pour gagner en efficacité, nous allons, cette fois, analyser les trois codes manquants simultanément. Nous savons déjà que les codes de bureau de vote 4, 8 et 9 ne sont pas présents dans `cir_com_na`. De ce fait, nous allons regarder les lignes qui ont un bureau de vote mais pas de nom de commune dans la circonscription de Carquefou : la 5ème circonscription. Si dans celle-ci il n'y pas de ligne qui corresponde, cela serait très problématique car cela indiquerait que nous avons commis une erreur de raisonnement.
+
+
 
 ```{r}
 data[data$circonscription == "5ème circonscription" & 
                        is.na(data$nom_commune) & !is.na(data$circonscription),]
 ```
 
+
+
 Dans la 5ème circonscription, il n'y a qu'une ligne et celle-ci possède bien un code de bureau de vote qu'il manquait à Carquefou. Par conséquent, cela implique que la ligne de la 5ème circonscription qui n'a pas de valeur dans `nom_commune` mais qui a un 8 dans `code_bur_na`, est celle de Carquefou, nous pouvons même compléter les coordonnées géographiques qu'il manquait. De plus, cela implique également que les codes de bureau de vote 4 et 9 correspondent aux lignes dans `bur_na_com`. Cependant, nous ne sommes pas en mesure de terminer entre les deux laquelle correspond au code de bureau de vote 4 et laquelle au code de bureau de vote 9. Nous pouvons tout de même modifier nos différentes bases de données en conséquence.
+
+
 
 ```{r}
 # ----- data -----
@@ -1458,26 +1602,42 @@ bur_trou$nb_na_bureaux[bur_trou$nom_commune == "Carquefou"] <- 2
 bur_trou$bureaux_manquants[bur_trou$nom_commune == "Carquefou"] <- "c(4,9)"
 ```
 
+
+
 Maintenant que cela est fait, nous pouvons passer à la troisième commune.
+
+
 
 ```{r}
 bur_trou_cir_pb_1[3,]
 ```
 
+
+
 Dans celle-ci, trois codes de bureau de vote manquent : le 8, le 9 et 11. Regardons maintenant les codes de bureau de vote disponibles dans le circonscription.
+
+
 
 ```{r}
 data[data$circonscription == "9ème circonscription" & 
                        is.na(data$nom_commune) & !is.na(data$circonscription),]
 ```
 
+
+
 Dans la 9ème circonscription, seul un code de bureau de vote 1 est disponible, ce qui n'est pas pertinent pour notre ville. Cependant, il est très intéressant de constater que pour combler tous les trous des codes de bureau de vote de la commune, il est nécessaire qu'il y ait un ligne sans circonscription, sans nom de commune circonscription mais avec un code de bureau de vote qui corresponde, c'est-à-dire un 8, un 9 ou un 11, sinon cela veut à nouveau dire que nous avons commis une erreur de raisonnement. Regardons donc ces lignes grâce à `cir_com_na`
+
+
 
 ```{r}
 cir_com_na
 ```
 
+
+
 Nous constatons alors qu'il y a bien une ligne qui correspond, la deuxième, avec le code de bureau de vote 11. Nous pouvons donc conclure avec certitude, que cette ligne a pour nom de commune `Saint-Brevin-les-Pins`, qu'elle fait partie de la `9ème circonscription` et nous pouvons même compléter les coordonnées géographiques. Toutefois, comme précédemment, pour les codes 8 et 9, nous ne pouvons rien conclure car il n'est pas possible de les distinguer l'un de l'autre.
+
+
 
 ```{r}
 # ----- data -----
@@ -1511,7 +1671,11 @@ bur_trou$bureaux_manquants[
 cir_com_na <- cir_com_na[-2,]
 ```
 
+
+
 Enfin, passons à la dernière commune. Nous allons procéder de la même façon.
+
+
 
 ```{r}
 # ----- Commune -----
@@ -1555,7 +1719,11 @@ bur_trou$bureaux_manquants[bur_trou$nom_commune == "Vertou"] <- "c(2, 4, 13)"
 
 ```
 
+
+
 Nous avons donc modifié au maximum les lignes par cette méthode. Maintenant, toujours dans le but de compléter notre base, et notamment les variables que nous venons d'utiliser. Reprenons la base `bur_trou_cir_pb` mais intéressons nous maintenant seulement à toutes les variables à qui il ne manque, théoriquement qu'un bureau, et qui n'ont donc qu'un 0 ou 1 dans `nb_na_bureaux` (aucune ligne dans la colonne `nb_na_bureaux` n'a de valeur supérieure à son nombre de codes de bureau de vote manquants) et regroupons les par circonscription. Avant de commencer, il est aussi nécessaire de redéfinir `bur_trou_cir_pb` car les valeurs de `bur_trou` ont été modifié par la méthode précédente.
+
+
 
 ```{r}
 bur_trou_cir_pb <- bur_trou[!(bur_trou$circonscription %in% cir_pb),]
@@ -1608,9 +1776,13 @@ bur_trou_cir_pb_2_10 <-
 
 ```
 
+
+
 Le but ici va être de regarder pour chaque circonscription les lignes pour lesquelles il ne manque qu'un code de bureau de vote. Si le code manquant ne fait pas partie de la colonne `code_bur_vote` de la base `cir_com_na`, qui récapitule les lignes sans circonscription, sans nom de commune mais avec un bureau de vote (rappel : il reste les codes 1, 3 et 17) et qu'il n'est pas non plus disponible dans les circonscriptions, c'est-à-dire qu'il n'y a pas de ligne avec la circonscription et le code de bureau de vote mais sans nom de commune qui corresponde, alors nous pourrons en déduire que la ligne présente dans `bur_na_com` est celle du bureau en question. De nouveau, pour mieux comprendre cela, nous allons détailler les premiers cas.
 
 Avant de commencer, il est utile de regarder les circonscriptions où nous ne pourrons rien trouver par cette méthode. D'une part, les circonscriptions 4, 6 et 7 ont été exclues, de ce fait, nous ne pourrons pas compléter la colonne `circonscription` avec cette méthode. D'autre part, nous allons regarder si les différentes bases que nous avons créées juste au-dessus contiennent des lignes car il est possible qu'aucune ligne dans chacune des circonscription ne respecte les critères que nous avons imposés.
+
+
 
 ```{r}
 nrow(bur_trou_cir_pb_2_1)[1]
@@ -1622,7 +1794,11 @@ nrow(bur_trou_cir_pb_2_9)[1]
 nrow(bur_trou_cir_pb_2_10)[1]
 ```
 
+
+
 Au final, les circonscriptions 1 et 2 sont également exclues car aucune ligne de respecte les critères imposés dans celles-ci. Nous allons maintenant analyser les circonscriptions dans l'ordre, en commençant donc par la quatrième.
+
+
 
 ```{r}
 #----- Code bureau manquants -----
@@ -1638,7 +1814,11 @@ data[data$circonscription == "4ème circonscription" &
                        !is.na(data$circonscription),] #utilisé sinon renvoie NA
 ```
 
+
+
 Dans la 4ème circonscription nous retrouvons Bouaye que nous avions vu précédemment. Bien qu'il pourrait être tentant ici de dire que la ligne de Saint-Aignan-Grandlieu dans `bur_na_com` correspond au code de bureau de vote 3 et que la ligne dans la 4ème circonscription avec le code de bureau de vote 3 est celle de Bouaye, cela pourrait s'avérer faux car il ne faut pas oublier qu'il existe une ligne dans la base de données qui n'a ni circonscription ni nom de commune mais qui a un code de bureau de vote 3. De ce fait, nous ne pouvions rien conclure ici. Passons donc à la circonscription suivante
+
+
 
 ```{r}
 #----- Code bureau manquants -----
@@ -1653,7 +1833,11 @@ data[data$circonscription == "5ème circonscription" &
                        is.na(data$nom_commune) & !is.na(data$circonscription),]
 ```
 
+
+
 Dans cette circonscription, la conclusion est bien plus immédiate. En effet, comme il n'y a pas de ligne sans nom de commune mais avec une circonscription et qu'il n'y a pas non plus de codes de bureau de vote problématique (pas de 1,3 ou 17), nous pouvons directement en conclure que chaque ligne dans `bur_na_com` correspond au bureau de vote manquant. Nous pouvons donc modifier les données en conséquence
+
+
 
 ```{r}
 # ----- Couffé -----
@@ -1733,7 +1917,11 @@ data$code_bur_vote[index_treilleres_bur4] <- 4
 bur_trou <- bur_trou[-which(bur_trou$nom_commune == "Treillières"),]
 ```
 
+
+
 Nous pouvons donc passer à la circonscription suivante, c'est-à-dire la 8ème.
+
+
 
 ```{r}
 #----- Code bureau manquants -----
@@ -1748,13 +1936,21 @@ data[data$circonscription == "8ème circonscription" &
                        is.na(data$nom_commune) & !is.na(data$circonscription),]
 ```
 
+
+
 Dans celle-ci, nous pouvons constater qu'il manque un code de bureau de vote 1 pour la commune de Prinquiau. Pour les mêmes raisons que celles évoquées précédemment, nous ne pourrons rien en conclure. Cependant, pour Trignac, comme le 2 ne fait pas parti de la liste, nous pouvons. De plus, il est intéressant de constater qu'il y a un code de bureau de vote 43 sans nom de commune dans la circonscription. Un numéro aussi haut est réservé aux villes très grandes, du moins à l'échelle du département, de ce fait, en listant les communes de la 6ème circonscription, nous pourrions potentiellement trouver à qui ce bureau appartient.
+
+
 
 ```{r}
 unique(data$nom_commune[data$circonscription == "8ème circonscription" & !is.na(data$nom_commune)])
 ```
 
+
+
 Après consultation, il ressort que le bureau 43 appartient de façon quasi-certaine à Saint-Nazaire. Cela s'explique par le fait que toutes les autres villes sont bien trop petites pour avoir autant de bureux de votes. En effet, si nous consdèrons que la population médiane par bureau de vote est de 956 personnes, que nous arrondissons cela à 1000, aucune des communes listées, hormis Saint-Nazaire abrite plus de 43000 habitants. Nous pourrions nous poser la question de savoir si la commune `NA` ne pourrait pas être Nantes, mais cela est impossible de part la géographie des circonscriptions. Au final, nous pouvons effectuer deux modifications dans notre base de données.
+
+
 
 ```{r}
 # ----- Trignac -----
@@ -1798,7 +1994,11 @@ bur_trou$bureaux_manquants[
 # mais si je ne le fais pas ça ne passe pas dans le rendu pdf de Quarto
 ```
 
+
+
 Passons ensuite à la 9ème circonscription.
+
+
 
 ```{r}
 #----- Code bureau manquants -----
@@ -1813,7 +2013,11 @@ data[data$circonscription == "9ème circonscription" &
                        is.na(data$nom_commune) & !is.na(data$circonscription),]
 ```
 
+
+
 Comme cette tâche est plutôt fastidieuse, nous allons automatiser cela à l'aide d'une boucle.
+
+
 
 ```{r}
 # Liste des numéros de bureaux à exclure
@@ -1847,7 +2051,11 @@ for (i in seq_len(nrow(bur_trou_cir_pb_2_9))) {
 }
 ```
 
+
+
 Puis, finalement, passons à la 10ème circonscription.
+
+
 
 ```{r}
 #----- Code bureau manquants -----
@@ -1891,6 +2099,8 @@ for (i in seq_len(nrow(bur_trou_cir_pb_2_10))) {
 }
 ```
 
+
+
 Bien que cette étape fut plutôt longue et que nous aurions sûrement pu l'automatiser avec une boucle plus tôt, nous avons souhaité tout de même donné du sens à ce que nous faisons et bien le comprendre afin, d'une part, de pouvoir bien réaliser la boucle et, d'autre part, dans le but de pouvoir bien expliquer les modifications réalisées.
 
 Nous avons désormais réalisé presque tout ce qui est possible pour compléter les noms des communes, les codes des bureaux de vote ainsi que leurs coordonnées géographiques (latitude et longitude), de façon certaine (sans approximation), en procédant parfois au cas par cas. Avant de recourir à des méthodes probabilistes, il reste encore des cellules que nous pouvons compléter avec certitude.
@@ -1900,6 +2110,8 @@ Nous avons désormais réalisé presque tout ce qui est possible pour compléter
 #### Taux d'absence et de votants
 
 Nous allons maintenant nous concentrer sur les différentes variables de taux : `tx_absents`, `tx_votants`, `tx_blancs`, `tx_nuls` et `tx_exprimes`. Ces variables sont intuitivement reliées entre elles. Prenons par exemple la relation entre `tx_absents` et `tx_votants` : dans une population donnée, une partie des électeurs a voté et une autre s’est abstenue. Il n’y a pas d’autre alternative possible. Ainsi, pour les lignes où `tx_absents` est `NA`, nous pouvons calculer sa valeur comme la différence entre 100 (soit 100 %) et `tx_votants`, sous réserve que `tx_votants` ne soit pas également `NA`. Si `tx_votants` est un `NA`, alors le résultat restera naturellement `NA` sans qu’il soit nécessaire d’ajouter une condition spécifique. Commençons donc par déterminer `tx_absents` par `tx_votants`
+
+
 
 ```{r}
 # VOTANTS → ABSENTS
@@ -1921,7 +2133,11 @@ data$tx_absents[is.na(data$tx_absents)] <- 100 - data$tx_votants[is.na(data$tx_a
 sum(is.na(data$tx_absents))
 ```
 
+
+
 Cette opération nous a donc permis de compléter 187 lignes sur 232, ce qui n'est pas négligeable car le jeu de données compte 1110 lignes. Cela représente donc plus de 80% des lignes qui n'avait pas de valeur pour `tx_absents` qui ont été complétées, soit plus de 16% des lignes de la base entière. Maintenant, nous pouvons faire la même opération mais dans l'autre sens, c'est-à-dire compléter `tx_votants` grâce à `tx_absents`.
+
+
 
 ```{r}
 # ABSENTS → VOTANTS
@@ -1943,11 +2159,15 @@ data$tx_votants[is.na(data$tx_votants)] <- 100 - data$tx_absents[is.na(data$tx_v
 sum(is.na(data$tx_votants))
 ```
 
+
+
 Ici, cela a permis de compléter plus de 14% des lignes de `tx_votants` dans la base.
 
 #### Taux de votes blancs, nuls et exprimés
 
 Le principe est le même pour les variables `tx_blancs`, `tx_nuls` et `tx_exprimes`. En effet, la somme de ces 3 taux par bureau de vote, autrement dit par ligne, doit être égale à 100 (toujours respondant à 100%) car il n'y a pas d'autre choix, lorsqu'une personne a voté, d'avoir voté blanc, nul ou avoir exprimé son opinion. Commençons par compléter `tx_blancs`.
+
+
 
 ```{r}
 # NULS & EXPRIMES → BLANCS
@@ -1972,7 +2192,11 @@ data$tx_blancs[is.na(data$tx_blancs)] <- round(
 sum(is.na(data$tx_blancs))
 ```
 
+
+
 Logiquement, il y a moins de remplacement que dans le cas précédent car pour pouvoir calculer `tx_blancs`, il est cette fois nécessaire que les 2 autres variables (`tx_nuls` et `tx_exprimes`) ne soient pas des `NA`. Déterminons ensuite `tx_nuls`.
+
+
 
 ```{r}
 # BLANCS & EXPRIMES → NULS
@@ -1997,7 +2221,11 @@ data$tx_nuls[is.na(data$tx_nuls)] <- round(
 sum(is.na(data$tx_nuls))
 ```
 
+
+
 Puis, enfin, nous refaisons la même opération mais pour `tx_exprimes`.
+
+
 
 ```{r}
 #----- Compter les NA avant remplacement -----
@@ -2020,6 +2248,8 @@ data$tx_exprimes[is.na(data$tx_exprimes)] <- round(
 sum(is.na(data$tx_exprimes))
 ```
 
+
+
 \newpage
 
 ## Remplacements approximatifs
@@ -2030,13 +2260,19 @@ Jusqu’à présent, nous avons réussi à compléter les lignes manquantes pour
 
 Mais avant, nous allons sauvegarder la base de données data où nous avons effectué des remplacements supposés certains afin, à la fin, de la comparer à la base initiale (car dans notre cas nous l'avons, dans un projet réel nous n'aurions pas pu le faire).
 
+
+
 ```{r}
 data_save_2 <- data
 ```
 
+
+
 ### Nombre d'inscrits
 
 Nous pouvons maintenant continuer les modifications. Pour ce faire, nous allons déterminer la moyenne d'inscrits par commune et nous allons utiliser cette valeur pour remplacer les `NA` de la variable `inscrits` au sein de chaque commune. Cette façon de faire s'explique par le fait que, en règle générale, les bureaux de votes sont assignés afin de répartir au mieux la population dans chaque commune. De ce fait, il n'y a habituellement pas d'écarts majeurs entre-eux et donc une moyenne par commune semble intéressante.
+
+
 
 ```{r}
 #----- Compter les NA avant remplacement -----
@@ -2073,6 +2309,8 @@ data <- data |>
 sum(is.na(data$inscrits))
 ```
 
+
+
 Grâce à cette opération, nous sommes passés de 241 valeurs manquantes à seulement 23. Ces 23 `NA` peuvent s'expliquer par plusieurs choses. La première est qu'il n'y a pas de nom de commune sur la ligne où nous cherchons à déterminer le nombre d'inscrits. De ce fait, la valeur ne peut pas être remplacée par la valeur moyenne car nous ne savons pas à quelle commune la ligne appartient. La seconde raison est que, au sein des groupes de lignes partageant le même nom de commune, aucune n'a de données concernant le nombre d'inscrits. Par exemple, si une petite ville n'a qu'un bureau de vote et que pour celui-ci le nombre d'inscrit n'est pas indiqué, alors nous ne sommes pas en mesure de l'approximé par la méthode utilisée précédemment. Nous pourrions alors décider de voir plus large, et de grouper les lignes non plus par nom de commune, mais par circonscription. Le problème est que cela fait nettement perdre en précision. De ce fait, nous allons pour le moment laisser les `NA` et nous agirons ensuite dessus si nous trouvons cela préférable.
 
 ### Circonscription
@@ -2080,6 +2318,8 @@ Grâce à cette opération, nous sommes passés de 241 valeurs manquantes à seu
 Avant d’utiliser des méthodes d’imputation comme `pmm` pour approximer les données manquantes, nous pouvons améliorer la fiabilité des résultats en tentant de compléter davantage notre base. Pour cela, nous allons chercher à compléter à nouveau les circonscriptions. Notre objectif est clair : compléter les données de circonscription, car celles-ci peuvent révéler des tendances spécifiques, comme le taux d’abstention ou les votes nuls, qui sont souvent homogènes au sein d’une même circonscription. Cela s’explique par les similitudes entre les communes qui les composent.
 
 Pour illustrer notre démarche, nous allons commencer par examiner les communes, qu’elles soient nommées ou non, qui n’ont pas de circonscription renseignée mais possèdent des coordonnées géographiques complètes.
+
+
 
 ```{r}
 cir_na <- data |>
@@ -2090,7 +2330,11 @@ cir_na <- data |>
 cir_na$nom_commune
 ```
 
+
+
 Nous constatons que 11 communes partagent ces caractéristiques, et que toutes ont un nom. Si nous plaçons maintenant ces 11 points sur une carte avec les lignes ayant à la fois circonscription et coordonnées géographiques, nous obtenons le dessin suivant.
+
+
 
 ```{r}
 #----- Définition du vecteur de couleurs -----
@@ -2144,11 +2388,15 @@ data |>
   )
 ```
 
+
+
 Lorsque nous regardons cette carte, certaines choses sautent aux yeux. Par exemple, le point rouge le plus à gauche, qui correspond à la commune de La Turballe, est bien implanté dans la 7ème circonscription et tellement à l'écart des autres qu'il semble évident que la commune fait partie de la 7ème circonscription. L'analyse est la même pour les communes de Soulvache et Saint-Aubin-des-Châteaux au nord de la carte, dans la 6ème circonscription. De ce fait, pour combler les `NA` dans la liste des communes précédemment citées, nous allons, grâce aux communes ayant une circonscription figurant sur les carte et à leurs coordonnées, déterminer le centre de chaque circonscription. Après cela, pour chaque commune sans circonscription mais avec des coordonnées complètes (`cir_na$nom_commune`), nous allons déterminer la distance entre la commune et les différents points de centre de circonscription, afin de trouver la distance la plus faible et donc d'attribuer cette circonscription à la commune.
 
 Cette méthode présente toutefois quelques défauts. En effet, si elle marche bien pour les cas cités précédemment, elle fonctionne aussi très bien pour les communes situées au centre de la circonscription. Cependant, elle fonctionne beaucoup moins bien pour les communes proches d'une autre circonscription. En effet, si le point de centre de l'autre circoncription est plus proche de la commune que le point de sa réelle circonscription alors, la mauvaise circonscription sera attribuée. Malgré cela, nous pouvons nous conforter en nous disant que même s'il y a des erreurs, cela représente une toute petite partie des communes, car la majorité dans la base de données ont déjà une circonscription. De plus, cette variable n'est pas un élément fondamental dans le fait d'aller voter ou non, c'est un indicateur de tendance mais cela ne fait pas tout et, il y a fort à parier, qu'entre deux communes voisines mais de circonscriptions différentes, il n'y ait pas de réelle différence entre les taux de la base de données.
 
 Comme précédemment, avant de procéder aux changements, nous allons écarter la ville de Nantes, cela se justifie par le fait que, là encore, celle-ci est présente dans plusieurs circonscriptions et donc incorporer les lignes de Nantes sans circonscription dans une seule circonscription pourrait venir fausser les analyses futures en donnant une nombre de ligne disproportionné à une seule circonscription.
+
+
 
 ```{r}
 #----- Obtenir les coordonnées par commune -----
@@ -2205,7 +2453,11 @@ cir_na <- cir_na |>
   ungroup()
 ```
 
+
+
 Si maintenant nous reprenons la carte précédente en remplaçant la couleur des points sans circonscription par celle de la circonscription attribuée, nous obtenons la carte suivante.
+
+
 
 ```{r}
 ggplot() +
@@ -2252,7 +2504,11 @@ ggplot() +
   )
 ```
 
+
+
 En analysant cette carte, les changements semblent plutôt cohérents et nous pouvons donc ajouter les modifications à `data`.
+
+
 
 ```{r}
 data <- data |>
@@ -2266,18 +2522,28 @@ data <- data |>
   select(-circonscription_estimee)
 ```
 
+
+
 Après cette modification, regardons combien de circonscriptions sont encore vide
+
+
 
 ```{r}
 sum(is.na(data$circonscription))
 ```
 
+
+
 Bien que la valeur de 45 puisse sembler relativement élevée, il ne faut pas oublier que nous avons retiré Nantes de nos modifications car c'est une ville problématique à plusieurs niveau dans notre jeu de données. Regardons alors ce que cela donne sans la ville de Nantes.
+
+
 
 ```{r}
 sum(is.na(data$circonscription) & data$nom_commune != "Nantes", na.rm = TRUE) +
   sum(is.na(data$circonscription) & is.na(data$nom_commune), na.rm = TRUE)
 ```
+
+
 
 Au final, nous n'avons plus que 9 valeurs manquantes dans la colonne `circonscription`, ce qui est relativement faible étant donné la taille du jeu de données (environ 0.8% de données manquantes).
 
@@ -2286,6 +2552,8 @@ Au final, nous n'avons plus que 9 valeurs manquantes dans la colonne `circonscri
 Pour continuer avec les coordonnées géographiques et la circonscription, nous allons maintenant faire l'inverse : tenter d'estimer des coordonnées géographiques grâce aux données de circonscription lorsqu'il n'en manque qu'une. Cette étape vient après la précédente car présente une plus grande probabilités d'approximation. En effet, dans le cas précédent, pour la majorité des communes, la circonscription de rattachement semblait logique, tandis qu'estimer la longitude grâce à la latitude et la circonscription de référence est plus compliqué.
 
 #### Longitude
+
+
 
 ```{r}
 #----- Filtrer les données avec des longitudes manquantes -----
@@ -2343,9 +2611,13 @@ ggplot(data |> filter(!is.na(circonscription)),
   )
 ```
 
+
+
 Sur cette carte, plusieurs éléments sont représentés. Tout d'abord, comme dans les cartes précédentes, les communes sont indiquées par des points, et chaque point est coloré en fonction de la circonscription à laquelle la commune appartient. Ensuite, des lignes sont ajoutées pour représenter les données de communes pour lesquelles la circonscription et la latitude sont connues, mais dont la longitude est manquante. Ainsi, une ligne est tracée à la latitude correcte, mais la longitude peut varier tout au long de la ligne, puisqu'elle est indéterminée. Cependant, étant donné que la circonscription est également connue, chaque ligne est colorée en fonction de la circonscription à laquelle elle appartient. Cette information réduit considérablement les possibilités de localisation de la longitude. Par exemple, il serait peu probable qu'une commune d'une circonscription soit située au milieu d'une autre circonscription, car les communes d'une même circonscription sont généralement proches les unes des autres.
 
 Ainsi, bien que la longitude exacte de ces communes reste incertaine, cette méthode permet d'estimer leur position de manière plus précise en tenant compte de la proximité avec d'autres communes appartenant à la même circonscription. Cela réduit les incertitudes et permet d'éviter que les communes soient placées trop près les unes des autres. En nous basant sur ces indications, nous allons tenter d'approximer les longitudes manquantes de manière cohérente, en ajustant leur position tout en respectant les contraintes géographiques et administratives.
+
+
 
 ```{r}
 #----- Déterminer les intervalles -----
@@ -2450,7 +2722,11 @@ ggplot() +
   scale_colour_manual(values = couleurs_circonscription)
 ```
 
+
+
 Bien que cette modification ne soit pas parfaite, nous constatons qu’à chaque exécution de la fonction, les résultats restent plausibles et cohérents. Même si certains éléments, comme la détection des zones vides dans les circonscriptions, auraient pu être ajoutés pour affiner davantage le processus, cela alourdirait la fonction sans apporter une réelle amélioration en termes de données. De plus, bien que les données évoluent à chaque exécution, cela n’affecte pas la précision globale de l’information. Par conséquent, nous pouvons mettre systématiquement à jour la base de données sans que cela n'impacte de manière significative la qualité des résultats obtenus.
+
+
 
 ```{r}
 #----- Compter les NA avant la modification -----
@@ -2476,11 +2752,15 @@ data <- data |>
 sum(is.na(data$longitude))
 ```
 
+
+
 Au final, bien que ce changement puisse sembler un peu superflux, nous réduisons de 19 le nombres de valeurs manquantes, soit environ deux tiers de ce qu'il restait.
 
 #### Latitude
 
 Nous allons donc faire exactement la même chose mais cette fois pour la latitude.
+
+
 
 ```{r}
 #----- Filtrer les données avec des longitudes manquantes -----
@@ -2531,7 +2811,11 @@ ggplot(data |> filter(!is.na(circonscription)),
   )
 ```
 
+
+
 Cette fois-ci, et de manière logique, les lignes sont verticales car c'est l'information sur la latitude qui manque. Contrairement à l'exemple précédent, nous avons ici la longitude exacte pour ces communes, ce qui signifie que leur latitude réelle se situe nécessairement quelque part le long des traits verticaux. Nous retrouvons ici la même idée que précédemment : les couleurs des lignes et des points, correspondant aux circonscriptions, nous aident à réduire les intervalles possibles pour la latitude. Une commune de la circonscription 1, par exemple, ne devrait pas se retrouver dans une zone où les points d'une autre circonscription prédominent. Cette méthode nous permet donc, une fois encore, d'estimer les valeurs manquantes de façon plausible et cohérente avec les données disponibles.
+
+
 
 ```{r}
 #----- Créer les intervalles pour les latitudes -----
@@ -2640,7 +2924,11 @@ ggplot() +
   scale_colour_manual(values = couleurs_circonscription)
 ```
 
+
+
 De manière similaire à la méthode utilisée précédemment, bien que cette approche ne permette pas une précision absolue, elle nous offre une estimation raisonnable des latitudes manquantes. Ces estimations peuvent alors être intégrées directement dans la base `data` pour enrichir les informations disponibles.
+
+
 
 ```{r}
 #----- Compter les NA avant la modification -----
@@ -2666,6 +2954,8 @@ data <- data |>
 sum(is.na(data$latitude))
 ```
 
+
+
 ### Variables de taux
 
 Maintenant que nous avons estimé les données géographiques manquantes, nous pouvons nous concentrer sur l'imputation des `NA` dans les différents taux. La première étape consiste à isoler les données à imputer et à examiner le nombre de valeurs manquantes pour chacune. Il est important de souligner qu'il est inutile d'estimer simultanément `tx_absents` et `tx_votants`. En effet, en imputant uniquement l'un des deux, la valeur de l'autre peut être calculée par complémentarité. De manière similaire, pour les variables `tx_blancs`, `tx_nuls`, et `tx_exprimes`, il est plus judicieux de traiter ces taux comme un groupe cohérent. Cela permet d'éviter qu'une imputation directe conduise à une somme dépassant légèrement 100%, ce qui serait incohérent.
@@ -2673,6 +2963,8 @@ Maintenant que nous avons estimé les données géographiques manquantes, nous p
 #### PMM
 
 Nous allons donc procéder étape par étape en réalisant les imputations nécessaires. Commençons par examiner les données et choisir la meilleure approche pour chaque groupe de variables.
+
+
 
 ```{r warning=FALSE, results = "hide", message=FALSE}
 #----- Créer un dataframe avec les colonnes nécessaires -----
@@ -2704,6 +2996,8 @@ summary(imputation)
 imputed_data <- complete(imputation, action = 1)
 ```
 
+
+
 #### Taux d'absence et de votants
 
 Grâce à l’imputation réalisée précédemment à l’aide de la méthode Predictive Mean Matching (PMM), nous avons pu estimer les valeurs manquantes pour `tx_absents`. Cette méthode permet d'obtenir des estimations fiables en s'appuyant sur des données similaires tout en respectant la distribution des variables d'origine. Maintenant que nous disposons des estimations pour `tx_absents`, il devient possible de calculer directement les valeurs de `tx_votants`. En effet, ces deux taux sont complémentaires et leur somme est toujours égale à 100%. Ainsi, pour chaque ligne :
@@ -2711,6 +3005,8 @@ Grâce à l’imputation réalisée précédemment à l’aide de la méthode Pr
 `tx_votants = 100 - tx_absents`
 
 Ce calcul garantit la cohérence des données, tout en exploitant les imputations déjà effectuées. Nous pouvons désormais mettre à jour la base de données pour inclure les taux de votants calculés, complétant ainsi cette partie de l'analyse.
+
+
 
 ```{r}
 #----- Vérifier si toutes les données ont été remplacées -----
@@ -2744,9 +3040,13 @@ data$tx_votants[is.na(data$tx_votants)] <- 100 - data$tx_absents[
 sum(is.na(data$tx_votants))
 ```
 
+
+
 #### Taux de votes blancs, nuls et exprimés
 
 Avec les taux de votants désormais calculés, nous pouvons nous concentrer sur l'estimation des valeurs manquantes pour `tx_blancs`, `tx_nuls` et `tx_exprimes`. Ces trois variables, bien qu'interconnectées, nécessitent une attention particulière pour garantir la cohérence des données, notamment que leur somme reste toujours égale à 100%.
+
+
 
 ```{r}
 #----- Vérifier si toutes les données ont été remplacées pour tx_blancs -----
@@ -2812,6 +3112,8 @@ data$tx_nuls <- round(data$tx_nuls,2)
 # (comme nous avons défini à beaucoup)
 ```
 
+
+
 Au terme de nos imputations, nous obtenons un tableau globalement bien complété. Nous avons délibérément choisi de ne pas tenter de remplir certaines cases restantes, car cela aurait impliqué un niveau d’approximation trop élevé. En effet, il est souvent préférable de conserver un `NA` plutôt que d'introduire une valeur peu fiable qui pourrait biaiser les analyses ultérieures.
 
 \newpage
@@ -2822,40 +3124,62 @@ Au terme de nos imputations, nous obtenons un tableau globalement bien complét�
 
 Pour finaliser notre travail, examinons les lignes qui demeurent incomplètes et réfléchissons à leur impact sur l'interprétation des données.
 
+
+
 ```{r}
 na_count <- rowSums(is.na(data))
 data[na_count >= 5, ]
 ```
 
+
+
 Il n'y a pas de ligne avec plus de 5 données manquantes. Cela montre que la plupart des lignes du jeu de données sont relativement complètes. Cela signifie qu'aucune ligne dans le jeu de données n'est trop incomplète et doit être exclue de l'analyse.
+
+
 
 ```{r}
 na_count <- rowSums(is.na(data))
 data[na_count == 4, ]
 ```
 
+
+
 Il y en a 3 avec exactement 4 données manquantes. Ces lignes contiennent un nombre relativement élevé de valeurs manquantes, mais elles restent peu nombreuses dans l'ensemble.
+
+
 
 ```{r}
 na_count <- rowSums(is.na(data))
 data[na_count == 3, ]
 ```
 
+
+
 Il y en a 11 avec exactement 3 données manquantes. C'est un peu plus que précédemment, mais cela reste encore assez limité.
+
+
 
 ```{r}
 na_count <- rowSums(is.na(data))
 data[na_count == 2, ]
 ```
 
+
+
 Il y en a 17 avec exactement 2 données manquantes. Cela représente un nombre modéré de lignes incomplètes.
+
+
 
 ```{r}
 na_count <- rowSums(is.na(data))
 data[na_count >= 1, ]
 ```
 
+
+
 Il y en a 238 avec exactement une donnée manquante. C'est un nombre significatif, nous pourrions donc nous questionner sur les remplacements que nous avons fait car nous pourrions interpréter cela comme : 20% de la base n'a pas été remplacée. Cependant, pour conclure cela nous devons nous intéresser plutôt à la proportion totale de `NA` dans `data`.
+
+
 
 ```{r}
 na_count <- rowSums(is.na(data))
@@ -2865,7 +3189,11 @@ na_count_save1 <- rowSums(is.na(data_save_1))
 nrow(data_save_1[na_count_save1 >= 1, ]) / nrow(data_save_1)
 ```
 
+
+
 En effet, dans le jeu de données contenant les valeurs manquantes non traitées, il n'y avait pas 25% de lignes avec au moins un `NA` mais presque 92%, ce qui est considérable. Il est donc plus pertinent de nous intéresser au total de données manquantes dans la base modifiée par rapport au 20% de la base initiale
+
+
 
 ```{r}
 sum(is.na(data))
@@ -2873,7 +3201,11 @@ sum(is.na(data))
 sum(is.na(data))/(nrow(data)*ncol(data))
 ```
 
+
+
 Au final, alors qu'il manquait 20% de la base au départ, après les modifications il ne nous en manque que moins de 3% Cependant, dans beaucoup d'entre-elles, cela est dû au manque de code de bureau de vote. Comme celui-ci n'est en réalité pas très important, analysons plutôt la base sans tenir compte de cette variable.
+
+
 
 ```{r}
 data_sans_bur <- data[, -which(names(data) == "code_bur_vote")]
@@ -2881,9 +3213,13 @@ data_sans_bur <- data[, -which(names(data) == "code_bur_vote")]
 sum(is.na(data_sans_bur)) / (nrow(data_sans_bur) * ncol(data_sans_bur))
 ```
 
+
+
 En retirant la colonne des codes de bureaux de votes, nous tombons à 1% de `NA`, ce qui est très satisfaisant.
 
 De plus, comme nous avons les données de la base complète, nous allons pouvoir comparer nos résultats avec celle-ci mais aussi analyser si les changements considérés comme sûrs étaient bons.
+
+
 
 ```{r}
 # Comparaison des circonscriptions
@@ -2909,11 +3245,15 @@ sum(is.na(diff_cir)) #na en valeur
 sum(is.na(diff_cir))/sum(is.na(data_save_1$circonscription)) #base NA
 ```
 
+
+
 La comparaison des bases `data_full` et `data_save_2` montre qu'il n'y a aucune différence entre les colonnes `circonscription` des deux jeux de données, à l'exception des valeurs manquantes (`NA`). En analysant la correspondance entre `data` (données complétées) et `data_full` (données complètes de référence), nous constatons que plus de 95 % des valeurs dans `data` correspondent à celles de `data_full`. Cela montre que l'opération de complétion des données a été très efficace. En effet, seulement 0.63 % des valeurs sont incorrectes, soit un total de 7 erreurs sur 1 100 observations, ce qui reste marginal. En revanche, environ 4 % des valeurs dans `data` sont toujours manquantes (`NA`), soit 45 valeurs, ce qui est relativement faible compte tenu du nombre initial de valeurs manquantes.
 
 Il est également intéressant de noter que parmi les valeurs initialement manquantes dans la variable `circonscription`, près de 97 % des `NA` ont pu être correctement remplacées. En revanche, environ 4 % des `NA` n'ont pas du tout pu être traitées, probablement en raison de l'impossibilité d'identifier de manière fiable la circonscription pour ces cas particuliers.
 
 Bien que nous préférions des remplacements exacts pour garantir une base de données complète, ces résultats sont satisfaisants. En effet, le faible nombre d'erreurs combiné à un pourcentage élevé de bonnes valeurs complétées montre que l'intégrité générale des données est préservée. De plus, les erreurs restantes n’ont probablement pas un impact significatif sur l’analyse globale, car elles concernent une proportion très faible des données. Par ailleurs, le fait que 4 % des valeurs restent manquantes dans `data` peut être considéré comme acceptable, en particulier compte tenu de la difficulté à traiter toutes les valeurs manquantes de manière fiable.
+
+
 
 ```{r}
 # Comparaison des communes
@@ -2939,6 +3279,8 @@ sum(is.na(diff_com)) #na en valeur
 sum(is.na(diff_com))/sum(is.na(data_save_1$code_bur_vote)) #base NA
 ```
 
+
+
 La comparaison des bases `data_full` et `data_save_2` montre qu'il n'y a aucune différence entre les colonnes `nom_commune` des deux jeux de données, à l'exception des valeurs manquantes (`NA`). En analysant la correspondance entre `data` (données complétées) et `data_full` (données complètes de référence), nous constatons que 97,8 % des valeurs dans `data` correspondent à celles de `data_full`, ce qui est un excellent résultat. Le taux d'erreurs est nul (0 %), ce qui veut dire qu'aucune valeur incorrecte n'a été introduite. Par ailleurs, 2.16 % des valeurs dans `data` restent manquantes (`NA`), soit un total de 24 valeurs, ce qui représente 10 % des valeurs manquantes de départ.
 
 Il est important de comprendre pourquoi le nombre de valeurs manquantes (`NA`) incorrectement complétées est nul. Cela s'explique par le fait que nous avons délibérément choisi de ne pas tenter de compléter un nom de commune lorsque nous n'étions pas certains de celui-ci. Cette prudence s'explique par deux raisons principales :
@@ -2948,6 +3290,8 @@ Il est important de comprendre pourquoi le nombre de valeurs manquantes (`NA`) i
 2.  Nous étions également limités par la structure de nos données. En Loire-Atlantique, il existe 207 communes, mais dans notre base `data`, nous n'en avions que 192. Cette différence s’explique par le fait que certaines communes très petites, n’ayant qu’un seul bureau de vote, avaient vu leur nom totalement masqué par des valeurs `NA`, rendant leur identification impossible.
 
 En conclusion, ces résultats témoignent d'une excellente qualité dans la complétion des données pour la variable `nom_commune`. Le choix de ne pas forcer la complétion en cas d’incertitude a permis de préserver l'intégrité des données et d'éviter des erreurs qui auraient pu avoir un impact significatif sur les analyses futures.
+
+
 
 ```{r}
 # Comparaison des codes de bureaux de vote
@@ -2973,6 +3317,8 @@ sum(is.na(diff_bur)) #na en valeur
 sum(is.na(diff_bur))/sum(is.na(data_save_1$code_bur_vote)) #base NA
 ```
 
+
+
 En analysant la correspondance entre la variable `code_bur_vote` dans `data` (données complétées) et `data_full` (données complètes de référence), nous constatons que 81 % des valeurs de `data` correspondent parfaitement à celles de `data_full`. Ce résultat reflète une part importante de valeurs correctement complétées, bien qu'inférieure à celle obtenue pour d'autres variables. À noter que le taux d'erreurs est nul (0 %), ce qui montre qu'aucune valeur incorrecte n'a été introduite.
 
 Cependant, 19 % des valeurs, soit un total de 211 valeurs, demeurent manquantes (`NA`), ce qui représente plus de 90 % des valeurs que nous avions à traiter pour cette variable. Ce taux relativement élevé s'explique par la nature de la variable `code_bur_vote`. En effet, comme mentionné précédemment, cette variable est principalement de nature administrative et n’a pas de réel intérêt pour faire ressortir des tendances ou analyses statistiques significatives. Nous l'avons utilisée uniquement pour compléter d'autres colonnes lorsque cela était possible et fiable.
@@ -2980,6 +3326,8 @@ Cependant, 19 % des valeurs, soit un total de 211 valeurs, demeurent manquantes 
 De plus, tenter de compléter cette variable de manière exhaustive n'aurait pas été pertinent. D'une part, cela n’aurait pas apporté d'amélioration significative à nos analyses globales. D'autre part, cela aurait pu introduire des erreurs importantes, comme dans le cas de `nom_commune`, où un bureau de vote pourrait être incorrectement associé à une commune qui n’est pas la bonne. Ce type d’erreur aurait pu fausser les résultats, notamment pour les petites communes, où chaque bureau de vote a un poids important.
 
 En conclusion, bien que le taux de complétion soit moins élevé pour cette variable, cela ne constitue pas un problème majeur. L'effort de complétion s'est concentré sur des variables plus significatives, tandis que pour `code_bur_vote`, nous avons privilégié la prudence afin de préserver l'intégrité des données.
+
+
 
 ```{r}
 # Comparaison des inscrits
@@ -3004,6 +3352,8 @@ sum(is.na(diff_insc)) #na en valeur
 sum(is.na(diff_insc))/sum(is.na(data_save_1$inscrits)) #base NA
 ```
 
+
+
 La comparaison entre `data` (données complétées) et `data_full` (données complètes de référence) révèle qu'il n'y a aucune différence pour la variable `inscrits` dans la base `data_full` par rapport à `data_save_2`. Contrairement aux variables que nous venons de voir, cela s'explique par le fait que nous n'avons pu faire aucun changement de façon sûre et non qu'ils sont tous bon. En effet, pour la variable `inscrits` rien ne nous permettait de trouver la valeur exacte.
 
 Cependant, les résultats des remplacements dans `data` montrent un tableau plus complexe. En effet, 78 % des valeurs de `data` correspondent aux valeurs de `data_full`, ce qui signifie que la majorité des valeurs sont bonnes. Toutefois, 20 % des valeurs, soit un total de 218 valeurs, sont incorrectes, tandis que 2 % (23 valeurs) restent manquantes (`NA`).
@@ -3011,6 +3361,8 @@ Cependant, les résultats des remplacements dans `data` montrent un tableau plus
 Cette situation est quelque peu inquiétante, car sur les 241 valeurs manquantes que comptait la base initiale, aucune n'a pu être bien complétée (218 mauvaises + 23 `NA` = 241 valeurs). Néanmoins, il est important de remettre ces résultats dans leur contexte. La variable `inscrits` représente un nombre d'inscrits, et il est souvent difficile d’obtenir cette information de manière exacte à l'unité près, surtout lorsqu'il s'agit de données estimées.
 
 Dans ce contexte, il convient de considérer que des erreurs mineures peuvent être tolérées. Par exemple, si une valeur approximée se situe dans une plage de ±5 % autour de la valeur réelle, elle peut être considérée comme valide. Cela signifie que, même si la valeur exacte n’a pas pu être remplie, une approximation raisonnable peut être acceptable tant que l’écart reste dans cette plage. Nous allons donc vérifier cela.
+
+
 
 ```{r}
 comp_insc <- abs(data$inscrits - data_full$inscrits) <= 0.05*data_full$inscrits
@@ -3026,11 +3378,15 @@ sum(is.na(comp_insc)) #na en valeur
 sum(is.na(comp_insc))/sum(is.na(data_save_1$inscrits)) #base NA
 ```
 
+
+
 Lorsqu'on évalue ces résultats à l'aide d'un seuil d'acceptation d'erreur de 5 %, nous obtenons que 85 % des valeurs sont considérées comme correctes, avec un écart de moins de 5 % par rapport à la valeur réelle. Le taux d'erreur reste à 12 % (137 mauvaises valeurs) avec un taux de 2 % de valeurs manquantes. Toutefois, en utilisant un seuil plus large de 10 %, nous obtenons que 90 % des valeurs sont considérées comme correctes, avec seulement 8 % des valeurs incorrectes et 2 % de valeurs manquantes.
 
 Les résultats obtenus pour la variable inscrits montrent que, du fait de l'impossibilité de compléter cette variable avec une grande certitude (aucun remplacement sûr), les remplacements effectués n'ont qu'un faible taux de valeurs acceptables En effet, à un seuil d'erreur de 5 %, moins de 50 % des valeurs estimées sont correctes, et à 10 %, environ 35 % des valeurs restent erronées. Ces résultats indiquent que la méthode de complétion, qui repose sur des estimations basées sur les autres bureaux de vote de la même commune, présente des limites notables. Cela s'explique en grande partie par la variabilité entre les bureaux de vote d'une même commune, qui peut être particulièrement marquée dans les petites communes disposant de peu de bureaux de vote. L'argument selon lequel la population de chaque commune serait uniformément répartie entre ses bureaux de vote ne tient pas suffisamment dans ce contexte pour permettre une estimation fiable du nombre d'inscrits.
 
 Les valeurs suivantes, étant de nature similaire (quantitatives continues), feront directement l'objet d'une analyse des différences à des seuils d'erreur de 5 % et 10 %.
+
+
 
 ```{r}
 # Comparaison des taux d'absence
@@ -3049,11 +3405,15 @@ sum(is.na(comp_abs)) #na en valeur
 sum(is.na(comp_abs))/sum(is.na(data_save_1$tx_absents)) #base NA
 ```
 
+
+
 Les résultats des remplacements pour la variable `tx_absents` montrent une très bonne précision dans la complétion des données. À un seuil d'erreur de 5 %, 97 % des valeurs dans `data` correspondent aux valeurs de `data_full`, ce qui indique que la majorité des données ont été correctement remplacées. De plus, seulement 3 % des valeurs sont incorrectes, soit un total de 33 valeurs. À un seuil d'erreur de 10 %, la proportion des valeurs correctes augmente légèrement à 98 %, avec seulement 2 % des valeurs incorrectes (22 valeurs).
 
 Il est également à noter qu'aucune valeur manquante (`NA`) n'a subsisté après le remplacement des données. Cela montre que l'opération de complétion a été menée avec succès, avec un taux de remplacement de 100 %.
 
 En conclusion, les résultats sont très satisfaisants pour la variable `tx_absents`, avec un faible taux d'erreur et une absence totale de valeurs manquantes. Cela suggère que l'approche de complétion des données a été efficace pour cette variable, et les erreurs restantes ne devraient pas avoir d'impact significatif sur l'analyse globale.
+
+
 
 ```{r}
 # Comparaison des taux de votants
@@ -3072,6 +3432,8 @@ sum(is.na(comp_pres)) #na en valeur
 sum(is.na(comp_pres))/sum(is.na(data_save_1$tx_votants)) #base NA
 ```
 
+
+
 Les résultats des remplacements pour la variable `tx_votants` montrent également une très bonne précision dans la complétion des données, similaire à celle obtenue pour `tx_absents`. À un seuil d'erreur de 5 %, 99 % des valeurs dans `data` correspondent aux valeurs de `data_full`, ce qui indique que la majorité des données ont été correctement remplacées. Seulement 1 % des valeurs, soit un total de 13 valeurs, sont incorrectes. À un seuil d'erreur de 10 %, la proportion des valeurs correctes reste très élevée, avec 99 % des valeurs correspondantes et seulement 6 valeurs incorrectes.
 
 Il est aussi important de noter que, à un seuil d'erreur de 5 %, le pourcentage d'erreur relatif aux remplacements est de 6 % par rapport au nombre initial de valeurs manquantes (`NA`), et qu'il baisse à 2 % à un seuil d'erreur de 10 %. Cela reflète une très faible erreur dans les remplacements effectués. En d'autres termes, seulement 6 % des remplacements à 5 % de tolérance et 2 % à 10 % sont incorrects par rapport aux valeurs manquantes initiales.
@@ -3079,6 +3441,8 @@ Il est aussi important de noter que, à un seuil d'erreur de 5 %, le pourcentage
 Tout comme pour `tx_absents`, il est crucial de souligner qu'aucune valeur manquante (`NA`) n'a subsisté après le remplacement des données, ce qui montre que l'opération de complétion a été menée à bien, avec un taux de remplacement de 100 %.
 
 En conclusion, les résultats pour `tx_votants` sont très similaires à ceux de `tx_absents`, avec un faible taux d'erreur et une absence totale de valeurs manquantes. Étant donné que la valeur de `tx_votants` est généralement plus grande que celle de `tx_absents`, cela permet une plus grande tolérance aux erreurs relatives de 5 % et 10 %, ce qui explique probablement l'écart de quelques pourcentages. Les résultats sont donc très satisfaisants dans ce contexte.
+
+
 
 ```{r}
 # Comparaison des taux de votes blancs
@@ -3097,6 +3461,8 @@ sum(is.na(comp_bla)) #na en valeur
 sum(is.na(comp_bla))/sum(is.na(data_save_1$tx_blancs)) #base NA
 ```
 
+
+
 Les résultats pour le taux de votes blancs (`tx_blancs`) montrent une précision légèrement inférieure à celle obtenue pour les autres variables, bien que toujours acceptable. À un seuil d'erreur de 10 %, 95 % des valeurs dans `data` correspondent aux valeurs de `data_full`, tandis que 5 % des valeurs (soit 60 valeurs) sont incorrectes. À un seuil d'erreur de 5 %, 94 % des valeurs sont correctes, mais 6 % des valeurs sont incorrectes (soit 70 valeurs).
 
 Il est également important de noter que, comme pour les autres variables, aucune valeur manquante (`NA`) n'a subsisté après le remplacement des données, ce qui montre que l'opération de complétion a été menée à bien, avec un taux de remplacement de 100 %.
@@ -3104,6 +3470,8 @@ Il est également important de noter que, comme pour les autres variables, aucun
 Lorsque nous considèrons l'erreur relative par rapport au nombre initial de valeurs manquantes (`NA`), nous observons que, à un seuil de 5 %, environ 35 % des remplacements ont été incorrects. Cependant, ce taux reste relativement modéré comparé aux résultats obtenus pour d'autres variables.
 
 En conclusion, bien que les résultats pour `tx_blancs` soient légèrement moins bons que pour les autres variables, ils restent acceptables, avec une absence totale de valeurs manquantes. L'erreur relative à 5 % est un peu plus importante, mais cela peut être dû à la variabilité des taux de votes blancs entre les bureaux de vote, notamment dans les communes où le taux de participation est plus faible. Ces résultats suggèrent que, bien que les remplacements aient permis de traiter efficacement les données manquantes, la méthode reste moins fiable dans certains cas en raison de la variabilité des taux de blancs.
+
+
 
 ```{r}
 # Comparaison des taux de votes nuls
@@ -3122,6 +3490,8 @@ sum(is.na(comp_nul)) #na en valeur
 sum(is.na(comp_nul))/sum(is.na(data_save_1$tx_nuls)) #base NA
 ```
 
+
+
 Les résultats pour le taux de votes nuls (`tx_nuls`) montrent que, tout comme pour les autres variables, le taux de remplacement des valeurs manquantes est très élevé. À un seuil d'erreur de 10 %, 93 % des valeurs dans `data` correspondent aux valeurs de `data_full`, tandis que 7 % des valeurs (soit 75 valeurs) sont incorrectes. À un seuil d'erreur de 5 %, 92 % des valeurs sont correctes, mais 8 % des valeurs sont incorrectes (soit 80 valeurs).
 
 Il est à noter qu'aucune valeur manquante (`NA`) n'a subsisté après le remplacement des données, ce qui signifie que l'opération de complétion a été effectuée avec succès, atteignant un taux de remplacement de 100 %.
@@ -3129,6 +3499,8 @@ Il est à noter qu'aucune valeur manquante (`NA`) n'a subsisté après le rempla
 Concernant l'erreur relative par rapport au nombre initial de valeurs manquantes (`NA`), environ 34 % des remplacements ont été incorrects à un seuil de 10 %, ce qui est relativement élevé comparé aux autres variables. Cela indique que, même si la méthode de remplacement a permis de traiter efficacement les données manquantes, elle reste moins fiable pour cette variable, probablement en raison de la variabilité plus marquée des taux de votes nuls entre les bureaux de vote.
 
 En conclusion, bien que les résultats pour `tx_nuls` soient encore acceptables, ils montrent un taux d'erreur légèrement plus élevé que pour d'autres variables. La méthode de complétion des données a permis de traiter les valeurs manquantes, mais le taux d'erreur reste assez significatif à 5 % et 10 %. Cela suggère que la variabilité des taux de votes nuls entre les bureaux de vote pourrait affecter la précision des estimations dans certaines communes.
+
+
 
 ```{r}
 # Comparaison des taux de votes exprimés
@@ -3147,11 +3519,15 @@ sum(is.na(comp_exp)) #na en valeur
 sum(is.na(comp_exp))/sum(is.na(data_save_1$tx_exprimes)) #base NA
 ```
 
+
+
 Les résultats pour le taux de votes exprimés (`tx_exprimes`) montrent une situation surprenante mais très satisfaisante. En effet, que ce soit avec un seuil de 5 % ou de 10 %, toutes les valeurs dans `data` correspondent aux valeurs de `data_full`, avec un taux de concordance de 100 % et aucun remplacement incorrect. Contrairement aux autres variables comme `tx_blancs` et `tx_nuls`, où les valeurs proches de zéro rendent plus difficile la tolérance aux erreurs relatives, `tx_exprimes` présente des valeurs généralement proches de 100 %. Cela signifie qu'un seuil de 5 % ou 10 % couvre une plage suffisamment large pour inclure toutes les valeurs possibles, rendant ainsi les remplacements parfaits.
 
 Cela peut expliquer pourquoi, bien que `tx_blancs` et `tx_nuls` aient montré un taux d'erreur relativement plus élevé à ces seuils, `tx_exprimes` a parfaitement réussi à se conformer aux attentes. Étant donné que ces dernières ont des valeurs beaucoup plus grandes, les écarts relatifs sont moins sensibles et permettent une plus grande marge de manœuvre dans les remplacements.
 
 En conclusion, bien que les autres variables aient montré des erreurs à certains seuils, les résultats pour `tx_exprimes` sont impeccables, probablement en raison de la taille plus importante de ces valeurs et de la large plage couverte par les marges d'erreur de 5 % et 10 %.
+
+
 
 ```{r}
 # Comparaison des latitudes
@@ -3170,11 +3546,15 @@ sum(is.na(comp_lat)) #na en valeur
 sum(is.na(comp_lat))/sum(is.na(data_save_1$latitude)) #base NA
 ```
 
+
+
 Les résultats pour la variable `latitude` montrent une très bonne précision dans les remplacements. En utilisant un seuil d'erreur de 0.5 % (soit 10 fois plus précis que pour les autres variables), 99 % des valeurs sont correctement remplacées, avec seulement 1 valeur incorrecte. Cela témoigne de la grande précision des données de latitude.
 
 Étant donné que les coordonnées géographiques (latitude) sont très précises, il est logique de prendre un seuil aussi strict, à 0.5 %, afin de minimiser toute erreur. Cette approche est parfaitement adaptée pour les données géographiques où des écarts de quelques milliers de mètres peuvent avoir un impact significatif.
 
 Cependant, il reste encore 12 valeurs manquantes dans la base, soit 1 % des données, ce qui correspond à environ 5 % des valeurs initialement manquantes. Néanmoins, cela ne remet pas en cause la qualité générale de la complétion des données de latitude.
+
+
 
 ```{r}
 # Comparaison des longitudes
@@ -3192,6 +3572,8 @@ sum(is.na(comp_long)) / nrow(data) #na en %
 sum(is.na(comp_long)) #na en valeur
 sum(is.na(comp_long))/sum(is.na(data_save_1$longitude)) #base NA
 ```
+
+
 
 Les résultats pour la variable `longitude` montrent une bonne précision dans les remplacements, bien que légèrement inférieure à celle observée pour `latitude`. À un seuil d'erreur de 0.5 %, 97 % des valeurs sont correctement remplacées, avec 19 valeurs incorrectes. Ce taux de correction est encore très élevé, mais il est intéressant de noter qu'il reste 12 valeurs manquantes, soit 1. % des données, ce qui représente environ 5.2 % des valeurs initialement manquantes.
 
@@ -3226,3 +3608,4 @@ Nous tenons tout de même à ajouter qu'au cours de ce dossier, nous avons pris 
 Base officielle des codes postaux. (2024, novembre 13). *La Poste*. https://www.data.gouv.fr/fr/datasets/base-officielle-des-codes-postaux/#/information
 
 Ministère de l'intérieur. (2022, avril 14). Election présidentielle des 10 et 24 avril 2022 - Résultats définitifs du 1er tour. Data.gouv.fr. https://www.data.gouv.fr/fr/datasets/election-presidentielle-des-10-et-24-avril-2022-resultats-definitifs-du-1er-tour/
+
